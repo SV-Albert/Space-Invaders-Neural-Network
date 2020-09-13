@@ -1,29 +1,30 @@
 import pygame
 import os
+import sys
 
-class Entity:
-    def __init__ (self, xPos, yPos):
-        self.xPos = xPos
-        self.yPos = yPos
-    
-class LangeEnemy(Entity):
-    scoreWorth = 10
-    pass
 
-class MediumEnemy(Entity):
-    scoreWorth = 20
-    pass
+def loadSprite(name):
+    sprite_location = os.path.join(os.sys.path[0], "Assets", name)
+    return pygame.image.load(sprite_location).convert()
 
-class SmallEnemy(Entity):
-    scoreWorth = 30
-    pass
 
-class Player(Entity):
-    spriteLocation = os.path.join(os.sys.path[0], "Assets", "player.png")
+class Player(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.pos = pos
+        self.image = loadSprite("player.png")
+        self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
 
-    def getSprite(self):
-        return pygame.image.load(os.path.join(os.sys.path[0], "Assets", "player.png"))
-    pass
+    def move(self, distance):
+        self.rect.x += distance
 
-class Cover(Entity):
-    pass
+
+class PlayerProjectile(pygame.sprite.Sprite):
+    def __init__(self, pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.pos = pos
+        self.image = loadSprite("projectile.png")
+        self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
+
+    def move(self, distance):
+        self.rect.y -= distance
