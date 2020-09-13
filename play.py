@@ -7,7 +7,7 @@ import copy
 
 pygame.init()
 clock = pygame.time.Clock()
-fps = 120
+fps = 60
 screenWidth = 730
 screenHeight = 500
 screen = pygame.display.set_mode((screenWidth, screenHeight))
@@ -38,7 +38,7 @@ def play():
     setup()
     running = True
     projectile_spawned = False
-    image_update_countdown = 25
+    image_update_countdown = fps/2
     moving_counter = 34
     current_direction = "right"
     moving_down = False
@@ -75,7 +75,7 @@ def play():
                 projectile_spawned = False
                 projectile.kill()
             else:
-                projectile.move(5)
+                projectile.move(7)
                 if projectile.rect.y <= 0:
                     projectile_spawned = False
                     projectile.kill()
@@ -98,10 +98,10 @@ def play():
                         enemy.direction = "down"
                     moving_counter = 34
             enemy_sprites.update()
-            image_update_countdown = 25
+            image_update_countdown = fps/2
 
         all_sprites.draw(screen)
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(fps)
 
 play()
