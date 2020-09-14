@@ -1,5 +1,4 @@
-import pygame
-import os
+import pygame, os, random
 
 def loadSprite(name):
     sprite_location = os.path.join(os.sys.path[0], "Assets", name)
@@ -17,7 +16,6 @@ class Enemy(pygame.sprite.Sprite):
         if self.isDead:
             if pygame.time.get_ticks() - self.deathTimer > 50:  # Death animation length
                 self.kill()
-                print("Dead")
         else:
             if self.currentSprite == 0:
                 self.image = self.sprites[1]
@@ -41,13 +39,14 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = sprite_image.get_rect(center=sprite_center)
         self.isDead = True
         self.deathTimer = pygame.time.get_ticks()
+        super().update()
 
 
 class LargeEnemy(Enemy):
     def __init__(self, pos):
         super().__init__(pos)
         self.sprites = [loadSprite("large1.png"), loadSprite("large2.png")]
-        self.scoreWorth = 10
+        self.score_worth = 10
         self.currentSprite = 0
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
@@ -57,7 +56,7 @@ class MediumEnemy(Enemy):
     def __init__(self, pos):
         super().__init__(pos)
         self.sprites = [loadSprite("medium1.png"), loadSprite("medium2.png")]
-        self.scoreWorth = 20
+        self.score_worth = 20
         self.currentSprite = 0
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
@@ -67,7 +66,7 @@ class SmallEnemy(Enemy):
     def __init__(self, pos):
         super().__init__(pos)
         self.sprites = [loadSprite("small1.png"), loadSprite("small2.png")]
-        self.scoreWorth = 30
+        self.score_worth = 30
         self.currentSprite = 0
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
