@@ -1,5 +1,7 @@
 import pygame, os, random
 
+mystery_speed = 4
+
 def loadSprite(name):
     sprite_location = os.path.join(os.sys.path[0], "Assets", name)
     return pygame.image.load(sprite_location).convert()
@@ -29,7 +31,7 @@ class Enemy(pygame.sprite.Sprite):
             elif self.direction == "left":
                 self.rect.x -= 7
             elif self.direction == "down":
-                self.rect.y += 20
+                self.rect.y += 15
 
     def hit(self):
         sprite_center = self.rect.center
@@ -70,3 +72,21 @@ class SmallEnemy(Enemy):
         self.currentSprite = 0
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
+
+class MysteryEnemy(Enemy):
+    def __init__(self):
+        super().__init__((730, 40))
+        self.sprites = [loadSprite("mystery.png")]
+        # self.score_worth = 30
+        self.currentSprite = 0
+        self.image = self.sprites[0]
+        self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
+
+    def update(self):
+        if self.isDead:
+            if pygame.time.get_ticks() - self.deathTimer > 50:  # Death animation length
+                self.kill()
+        elif self.rect.x + self.rect.size[0] <= 0: 
+            self.kill()
+        else: 
+            self.rect.x -= mystery_speed
