@@ -11,8 +11,8 @@ from entities import *
 from enemies import *
 
 # Some fileds
-shooting_chance = 0.75
-mystery_chance = 0.01
+shooting_chance = 0.65
+mystery_chance = 0.001
 fps = 60
 
 foreground_sprites = pygame.sprite.Group()
@@ -26,11 +26,13 @@ player = Player((365, 440))
 bottom_line = pygame.Rect(0, 450, screenWidth, 4)
 player_image = pygame.image.load(os.path.join(os.sys.path[0], "Assets", "player.png"))
 background = pygame.image.load(os.path.join(os.sys.path[0], "Assets", "background.jpg"))
-font = pygame.font.SysFont('Impact', 25)
+font = pygame.font.SysFont('Comic Sans MS', 23)
 
 score = 0
+lives = 3
 
 def setup(lane):
+    player.image = player_image
     foreground_sprites.empty()
     enemy_sprites.empty()
     enemy_projectiles.empty()
@@ -38,7 +40,7 @@ def setup(lane):
     mystery.empty()
 
     x_delta = 45
-    y_delta = 35
+    y_delta = 30
     x_pos = 25
     y_pos = 70 + y_delta * (12 - lane)
     for i in range(11):
@@ -72,10 +74,16 @@ def setup(lane):
 
     foreground_sprites.add(player)
 
+def draw():
+    enemy_projectiles.update()
+    enemy_projectiles.draw(screen)
+    foreground_sprites.draw(screen)
+    pygame.draw.rect(screen, (255, 255, 255), bottom_line)
+
 def game(lanes):
     setup(lanes)
     global score
-    lives = 3
+    global lives
     shots_fired = 0
     running = True
     projectile_spawned = False
@@ -91,6 +99,7 @@ def game(lanes):
         screen.blit(background, (0,0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                draw()
                 return False
                 
         # Key press event handling 
@@ -162,7 +171,10 @@ def game(lanes):
             lives -= 1
             missle.kill()
             if lives == 0: 
+                player.destroy()
+                draw()
                 return False 
+
         # Collision between missles and barriers
         for missle in enemy_projectiles.sprites():
             barrier = pygame.sprite.spritecollideany(missle, barrier_sprites)
@@ -212,11 +224,8 @@ def game(lanes):
             if mystery.sprite.rect.x + mystery.sprite.rect.size[0] <= 0: 
                 mystery.empty()
 
-        enemy_projectiles.update()
-        enemy_projectiles.draw(screen)
-        foreground_sprites.draw(screen)
+        draw()
 
-        pygame.draw.rect(screen, (255, 255, 255), bottom_line)
         # Display remaining lives
         x_pos = 30
         y_pos = 465
@@ -229,27 +238,42 @@ def game(lanes):
         pygame.display.flip()
         clock.tick(fps)
 
-# game(11)
+def gameOver():
+    restart_text = font.render("Press Enter to restart/Esc to quit", 1, (255, 255, 255))
+    screen.blit(restart_text, (30, 460))
+    pygame.display.flip()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return True
+        key_pressed = pygame.key.get_pressed()
+        if key_pressed[pygame.K_RETURN]:
+            return False
+        elif key_pressed[pygame.K_ESCAPE]:
+            return True
+            
+        clock.tick(fps)
 
 def play():
-    running = True
-    while running:
-        screen.blit(background, (0,0))
-        play_button = font.render("Press Space to play", 1, (255, 255, 255))
-        screen.blit(play_button, (250, 245))
+    screen.blit(background, (0,0))
+    play_text = font.render("Press Enter to play", 1, (255, 255, 255))
+    screen.blit(play_text, (250, 245))
+    pygame.display.flip()
 
+    running = True
+    game_launched = False
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 break
 
-        gameLaunched = False
         key_pressed = pygame.key.get_pressed()
-        if key_pressed[pygame.K_SPACE]:
-            gameLaunched = True
+        if key_pressed[pygame.K_RETURN]:
+            game_launched = True
 
         starting_lane = 11
-        while gameLaunched:
+        while game_launched:
             stillPlaying = game(starting_lane)
             if stillPlaying:
                 if starting_lane < 3: 
@@ -257,11 +281,18 @@ def play():
                 else: 
                     starting_lane -= 1
             else: 
-                score = 0
-                break
-        pygame.display.flip()
+                if not gameOver():
+                    starting_lane = 11
+                    global score 
+                    score = 0
+                    global lives
+                    lives = 3
+                    gameLaunched = True
+                else:
+                    running = False
+                    break
+            
         clock.tick(fps)
         
         
-    
 play()

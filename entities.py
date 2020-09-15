@@ -2,8 +2,8 @@ import pygame
 import os
 import sys
 
-player_projectile_speed = 8
-enemy_projectile_speed = 6
+player_projectile_speed = 10
+enemy_projectile_speed = 7
 
 
 def loadSprite(name):
@@ -28,6 +28,9 @@ class Player(pygame.sprite.Sprite):
 
     def move(self, distance):
         self.rect.x += distance
+
+    def destroy(self):
+        self.image = loadSprite("player_dead.png")
 
 
 class PlayerProjectile(pygame.sprite.Sprite):
