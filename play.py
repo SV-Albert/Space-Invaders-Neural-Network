@@ -12,26 +12,35 @@ from enemies import *
 
 # Some fileds
 shooting_chance = 0.75
-mystery_chance = 0.001
+mystery_chance = 0.01
 fps = 60
 
 foreground_sprites = pygame.sprite.Group()
 enemy_sprites = pygame.sprite.Group()
 enemy_projectiles = pygame.sprite.Group()
 barrier_sprites = pygame.sprite.Group()
+mystery = pygame.sprite.GroupSingle()
+ 
 player = Player((365, 440))
-foreground_sprites.add(player)
 
 bottom_line = pygame.Rect(0, 450, screenWidth, 4)
 player_image = pygame.image.load(os.path.join(os.sys.path[0], "Assets", "player.png"))
 background = pygame.image.load(os.path.join(os.sys.path[0], "Assets", "background.jpg"))
 font = pygame.font.SysFont('Impact', 25)
 
-def setup():
+score = 0
+
+def setup(lane):
+    foreground_sprites.empty()
+    enemy_sprites.empty()
+    enemy_projectiles.empty()
+    barrier_sprites.empty()
+    mystery.empty()
+
     x_delta = 45
     y_delta = 35
     x_pos = 25
-    y_pos = 70
+    y_pos = 70 + y_delta * (12 - lane)
     for i in range(11):
         e0 = SmallEnemy((x_pos, y_pos))
         e1 = MediumEnemy((x_pos, y_pos + y_delta))
@@ -60,26 +69,30 @@ def setup():
         foreground_sprites.add(b0, b1, b2, b3, b4, b5, b6, b7, b8, b9)
         x_pos += 170
 
-def play():
-    setup()
+
+    foreground_sprites.add(player)
+
+def game(lanes):
+    setup(lanes)
+    global score
     lives = 3
-    score = 0
     shots_fired = 0
     running = True
     projectile_spawned = False
-    mystery_spawned = False
     update_countdown = int(len(enemy_sprites.sprites())/2)
-    lane = 11
+    lane = lanes
     current_direction = "right"
     moving_down = False
 
     while running:
+        if len(enemy_sprites.sprites()) == 0:
+            return True
+
         screen.blit(background, (0,0))
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-                break
-
+                return False
+                
         # Key press event handling 
         key_pressed = pygame.key.get_pressed()
         if key_pressed[pygame.K_RIGHT]:
@@ -99,9 +112,9 @@ def play():
             shots_fired += 1
 
         # Spawn mystery ship
-        if not mystery_spawned and random.uniform(0,1) < mystery_chance: 
-            mystery_spawned = True
+        if mystery.sprite is None and random.uniform(0,1) < mystery_chance: 
             mystery_ship = MysteryEnemy()
+            mystery.add(mystery_ship)
             foreground_sprites.add(mystery_ship)
 
         # Code for the player projectiles 
@@ -113,11 +126,10 @@ def play():
                 projectile_spawned = False
                 projectile.kill()
             # Collision between player projectile and the mystery ship
-            if mystery_spawned:
-                collision = pygame.sprite.collide_rect(mystery_ship, projectile)
+            if mystery.sprite is not None:
+                collision = pygame.sprite.collide_rect(mystery.sprite, projectile)
                 if collision:
-                    mystery_spawned = False
-                    mystery_ship.hit()
+                    mystery.sprite.hit()
                     projectile_spawned = False
                     projectile.kill()
                     if shots_fired == 23 or shots_fired % 15 == 0:
@@ -150,7 +162,7 @@ def play():
             lives -= 1
             missle.kill()
             if lives == 0: 
-                running = False 
+                return False 
         # Collision between missles and barriers
         for missle in enemy_projectiles.sprites():
             barrier = pygame.sprite.spritecollideany(missle, barrier_sprites)
@@ -195,8 +207,11 @@ def play():
             else:
                 update_countdown = int(len(enemy_sprites.sprites())/3)
 
-        if mystery_spawned:
-            mystery_ship.update()
+        mystery.update()
+        if mystery.sprite is not None:
+            if mystery.sprite.rect.x + mystery.sprite.rect.size[0] <= 0: 
+                mystery.empty()
+
         enemy_projectiles.update()
         enemy_projectiles.draw(screen)
         foreground_sprites.draw(screen)
@@ -214,4 +229,39 @@ def play():
         pygame.display.flip()
         clock.tick(fps)
 
+# game(11)
+
+def play():
+    running = True
+    while running:
+        screen.blit(background, (0,0))
+        play_button = font.render("Press Space to play", 1, (255, 255, 255))
+        screen.blit(play_button, (250, 245))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                break
+
+        gameLaunched = False
+        key_pressed = pygame.key.get_pressed()
+        if key_pressed[pygame.K_SPACE]:
+            gameLaunched = True
+
+        starting_lane = 11
+        while gameLaunched:
+            stillPlaying = game(starting_lane)
+            if stillPlaying:
+                if starting_lane < 3: 
+                    starting_lane = 11
+                else: 
+                    starting_lane -= 1
+            else: 
+                score = 0
+                break
+        pygame.display.flip()
+        clock.tick(fps)
+        
+        
+    
 play()

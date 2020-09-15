@@ -35,13 +35,12 @@ class Enemy(pygame.sprite.Sprite):
 
     def hit(self):
         sprite_center = self.rect.center
-        sprite_location = os.path.join(os.sys.path[0], "Assets", "explosion.png")
-        sprite_image = pygame.image.load(sprite_location)
+        sprite_image = self.explosion_sprite
         self.image = sprite_image.convert()
         self.rect = sprite_image.get_rect(center=sprite_center)
         self.isDead = True
         self.deathTimer = pygame.time.get_ticks()
-        super().update()
+        self.update()
 
 
 class LargeEnemy(Enemy):
@@ -52,6 +51,7 @@ class LargeEnemy(Enemy):
         self.currentSprite = 0
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
+        self.explosion_sprite = loadSprite("explosion.png")
 
 
 class MediumEnemy(Enemy):
@@ -62,6 +62,7 @@ class MediumEnemy(Enemy):
         self.currentSprite = 0
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
+        self.explosion_sprite = loadSprite("explosion.png")
 
 
 class SmallEnemy(Enemy):
@@ -72,6 +73,7 @@ class SmallEnemy(Enemy):
         self.currentSprite = 0
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
+        self.explosion_sprite = loadSprite("explosion.png")
 
 class MysteryEnemy(Enemy):
     def __init__(self):
@@ -81,12 +83,11 @@ class MysteryEnemy(Enemy):
         self.currentSprite = 0
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(self.pos[0], self.pos[1]))
+        self.explosion_sprite = loadSprite("mystery_explosion.png")
 
     def update(self):
         if self.isDead:
             if pygame.time.get_ticks() - self.deathTimer > 50:  # Death animation length
                 self.kill()
-        elif self.rect.x + self.rect.size[0] <= 0: 
-            self.kill()
         else: 
             self.rect.x -= mystery_speed

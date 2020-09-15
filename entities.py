@@ -2,7 +2,7 @@ import pygame
 import os
 import sys
 
-player_projectile_speed = 7
+player_projectile_speed = 8
 enemy_projectile_speed = 6
 
 
