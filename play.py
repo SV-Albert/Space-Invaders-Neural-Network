@@ -4,6 +4,7 @@ screenWidth = 730
 screenHeight = 500
 screen = pygame.display.set_mode((screenWidth, screenHeight))
 pygame.display.set_caption("Space Invaders")
+pygame.display.set_icon(pygame.image.load(os.path.join(os.sys.path[0], "Assets", "small2.png")))
 clock = pygame.time.Clock()
 
 from entities import *
@@ -68,7 +69,6 @@ def play():
     projectile_spawned = False
     mystery_spawned = False
     update_countdown = int(len(enemy_sprites.sprites())/2)
-    moving_counter = 34
     lane = 11
     current_direction = "right"
     moving_down = False
@@ -150,7 +150,7 @@ def play():
             lives -= 1
             missle.kill()
             if lives == 0: 
-                running = False
+                running = False 
         # Collision between missles and barriers
         for missle in enemy_projectiles.sprites():
             barrier = pygame.sprite.spritecollideany(missle, barrier_sprites)
@@ -180,12 +180,15 @@ def play():
                     running = False
                     break
             else:
-                moving_counter -= 1
-                if moving_counter == 0:
+                reachedEdge = False
+                for enemy in enemy_sprites.sprites():
+                    if (enemy.direction == "right" and enemy.rect.center[0] >= screenWidth - 25) or (enemy.direction == "left" and enemy.rect.center[0] <= 25):
+                        reachedEdge = True
+                        break
+                if reachedEdge:
                     moving_down = True
                     for enemy in enemy_sprites.sprites():
                         enemy.direction = "down"
-                    moving_counter = 34
             enemy_sprites.update()
             if int(len(enemy_sprites.sprites())/2) < 12:
                 update_countdown = 12
