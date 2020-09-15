@@ -39,10 +39,11 @@ def setup(lane):
     barrier_sprites.empty()
     mystery.empty()
 
+    lane_delta = 20
     x_delta = 45
     y_delta = 30
     x_pos = 25
-    y_pos = 70 + y_delta * (12 - lane)
+    y_pos = 70 + lane_delta * (12 - lane)
     for i in range(11):
         e0 = SmallEnemy((x_pos, y_pos))
         e1 = MediumEnemy((x_pos, y_pos + y_delta))
@@ -91,6 +92,7 @@ def game(lanes):
     lane = lanes
     current_direction = "right"
     moving_down = False
+    barriers_reached = False
 
     while running:
         if len(enemy_sprites.sprites()) == 0:
@@ -167,7 +169,7 @@ def game(lanes):
 
         # Collision between player and missles
         missle = pygame.sprite.spritecollideany(player, enemy_projectiles)
-        if missle is not None:
+        if missle is not None and lanes > 1: #Missles cannot hit player when the invaders have reached the last row (bug/feature of the original game)
             lives -= 1
             missle.kill()
             if lives == 0: 
@@ -182,10 +184,17 @@ def game(lanes):
                 barrier.hit()
                 missle.kill()
 
+        # Collision between enemies and barriers
+        if barriers_reached:
+            for barrier in barrier_sprites.sprites():
+                enemy = pygame.sprite.spritecollideany(barrier, enemy_sprites)
+                if enemy is not None:
+                    barrier.hit()
+
         # Update the sprites
         update_countdown -= 1
         if update_countdown <= 0:
-            if random.uniform(0,1) < shooting_chance:
+            if random.uniform(0,1) < shooting_chance and len(enemy_projectiles.sprites()) < 3:
                 index = random.randint(0, len(enemy_sprites.sprites()) - 1)
                 enemy = enemy_sprites.sprites()[index]
                 missle = EnemyProjectile((enemy.rect.center[0], enemy.rect.y + enemy.rect.size[1]))
@@ -204,12 +213,14 @@ def game(lanes):
                     running = False
                     break
             else:
-                reachedEdge = False
+                reached_edge = False
                 for enemy in enemy_sprites.sprites():
+                    if enemy.rect.y + enemy.rect.size[1] >= 365: #Check if any enemy has reached the barriers
+                        barriers_reached = True
                     if (enemy.direction == "right" and enemy.rect.center[0] >= screenWidth - 25) or (enemy.direction == "left" and enemy.rect.center[0] <= 25):
-                        reachedEdge = True
+                        reached_edge = True
                         break
-                if reachedEdge:
+                if reached_edge:
                     moving_down = True
                     for enemy in enemy_sprites.sprites():
                         enemy.direction = "down"
@@ -229,7 +240,7 @@ def game(lanes):
         # Display remaining lives
         x_pos = 30
         y_pos = 465
-        for l in range(lives):
+        for l in range(lives - 1):
             screen.blit(player_image, (x_pos, y_pos))
             x_pos += 50
         
@@ -274,19 +285,19 @@ def play():
 
         starting_lane = 11
         while game_launched:
+            global lives
             stillPlaying = game(starting_lane)
             if stillPlaying:
                 if starting_lane < 3: 
                     starting_lane = 11
                 else: 
                     starting_lane -= 1
+                lives = 3
             else: 
                 if not gameOver():
                     starting_lane = 11
                     global score 
                     score = 0
-                    global lives
-                    lives = 3
                     gameLaunched = True
                 else:
                     running = False
@@ -296,3 +307,4 @@ def play():
         
         
 play()
+# game(1)
