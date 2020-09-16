@@ -84,6 +84,9 @@ def setup(lane):
         highscore = 0
 
 def saveHighscore(score):
+    dir = os.path.join(os.sys.path[0], "saves")
+    if not os.path.exists(dir):
+        os.mkdir(dir)
     try:
         save = shelve.open('saves/hi-score.txt')
         save['score'] = highscore
@@ -159,7 +162,7 @@ def game(lanes):
                     mystery.sprite.hit()
                     projectile_spawned = False
                     projectile.kill()
-                    if shots_fired == 23 or shots_fired % 15 == 0:
+                    if shots_fired == 23 or (shots_fired > 23 and shots_fired - 23 % 15 == 0):
                         score += 300
                     else:
                         possible_scores = [50, 100, 150]
