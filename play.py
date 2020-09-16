@@ -1,4 +1,4 @@
-import pygame, os
+import pygame, os, shelve
 pygame.init()
 screenWidth = 730
 screenHeight = 500
@@ -26,8 +26,9 @@ player = Player((365, 440))
 bottom_line = pygame.Rect(0, 450, screenWidth, 4)
 player_image = pygame.image.load(os.path.join(os.sys.path[0], "Assets", "player.png"))
 background = pygame.image.load(os.path.join(os.sys.path[0], "Assets", "background.jpg"))
-font = pygame.font.SysFont('Comic Sans MS', 23)
+font = pygame.font.SysFont('Comic Sans MS', 20)
 
+highscore = 0
 score = 0
 lives = 3
 
@@ -72,8 +73,23 @@ def setup(lane):
         foreground_sprites.add(b0, b1, b2, b3, b4, b5, b6, b7, b8, b9)
         x_pos += 170
 
-
     foreground_sprites.add(player)
+
+    global highscore
+    try:
+        save = shelve.open('saves/hi-score.txt')
+        highscore = save['score']
+        save.close()
+    except:
+        highscore = 0
+
+def saveHighscore(score):
+    try:
+        save = shelve.open('saves/hi-score.txt')
+        save['score'] = highscore
+        save.close()
+    except:
+        print("Failed to save highscore")
 
 def draw():
     enemy_projectiles.update()
@@ -244,8 +260,15 @@ def game(lanes):
             screen.blit(player_image, (x_pos, y_pos))
             x_pos += 50
         
+        global highscore
+        if score > highscore:
+            highscore = score
+            saveHighscore(highscore)
+
+        highscore_text = font.render("Hi-score: " + str(highscore), 1, (255, 255, 255))
         score_text = font.render("Score: " + str(score), 1, (255, 255, 255))
-        screen.blit(score_text, (600, 460))
+        screen.blit(highscore_text, (580, 460))
+        screen.blit(score_text, (10, 10))
         pygame.display.flip()
         clock.tick(fps)
 
@@ -268,7 +291,7 @@ def gameOver():
 def play():
     screen.blit(background, (0,0))
     play_text = font.render("Press Enter to play", 1, (255, 255, 255))
-    screen.blit(play_text, (250, 245))
+    screen.blit(play_text, (275, 245))
     pygame.display.flip()
 
     running = True
@@ -285,17 +308,17 @@ def play():
 
         starting_lane = 11
         while game_launched:
-            global lives
             stillPlaying = game(starting_lane)
             if stillPlaying:
                 if starting_lane < 3: 
                     starting_lane = 11
                 else: 
                     starting_lane -= 1
-                lives = 3
             else: 
                 if not gameOver():
                     starting_lane = 11
+                    global lives
+                    lives = 3
                     global score 
                     score = 0
                     gameLaunched = True

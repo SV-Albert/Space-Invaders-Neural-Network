@@ -77,7 +77,7 @@ class SmallEnemy(Enemy):
 
 class MysteryEnemy(Enemy):
     def __init__(self):
-        super().__init__((730, 40))
+        super().__init__((730, 50))
         self.sprites = [loadSprite("mystery.png")]
         # self.score_worth = 30
         self.currentSprite = 0
