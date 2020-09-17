@@ -244,10 +244,11 @@ def game(lanes):
                     for enemy in enemy_sprites.sprites():
                         enemy.direction = "down"
             enemy_sprites.update()
-            if int(len(enemy_sprites.sprites())/2) < 12:
-                update_countdown = 12
+            if int(len(enemy_sprites.sprites())/3) < 8:
+                update_countdown = 8
             else:
                 update_countdown = int(len(enemy_sprites.sprites())/3)
+            print(update_countdown)
 
         mystery.update()
         if mystery.sprite is not None:
