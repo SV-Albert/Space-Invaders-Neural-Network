@@ -248,7 +248,6 @@ def game(lanes):
                 update_countdown = 8
             else:
                 update_countdown = int(len(enemy_sprites.sprites())/3)
-            print(update_countdown)
 
         mystery.update()
         if mystery.sprite is not None:
